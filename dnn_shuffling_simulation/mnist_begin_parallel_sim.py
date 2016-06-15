@@ -4,8 +4,7 @@
 from tensorflow.examples.tutorials.mnist import input_data
 import tensorflow as tf
 import numpy as np
-
-
+# import numpy as np
 
 
 def shuffle_dataset(full_data_x, full_data_y, num_examples):
