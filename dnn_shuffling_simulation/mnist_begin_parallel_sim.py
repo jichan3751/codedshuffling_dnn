@@ -6,6 +6,8 @@ import tensorflow as tf
 import numpy as np
 
 
+
+
 def shuffle_dataset(full_data_x, full_data_y, num_examples):
 	perm1 = np.random.permutation(num_examples)
 	full_data_x_shuffled = full_data_x[perm1,:]
