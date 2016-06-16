@@ -5,6 +5,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 import tensorflow as tf
+import numpy as np
 import time
 
 def weight_variable(shape):
@@ -43,7 +44,7 @@ def update_averaged_parameter(sess,W_list,n_workers):
     W = W / n_workers
     for i in range(n_workers):
         assign_op = W_list[i].assign(W)
-    sess.run(assign_op)
+        sess.run(assign_op)
 
 
 def train_model(
