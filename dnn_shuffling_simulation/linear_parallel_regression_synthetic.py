@@ -1,20 +1,7 @@
 
 """
-1. make graph & initialize
-
-2. assign random W_ans,b_ans to variables
-
-	feed random x and get output y
-
-3. initialize graph again to get variables randomize
-
-4. run optimizer
-
->features needed
-- add noise
-
-
-
+changed from dnn file:
+	- removed b, W2, b2 variable
 """
 import sys
 import tensorflow as tf
@@ -22,26 +9,15 @@ import numpy as np
 import time
 
 
-def train_model(n_in, n_hidden, n_out, step_size):
+def train_model(n_in, step_size):
 
 	# inputs
 	x = tf.placeholder(tf.float32, [None, n_in]) 
-	y_ = tf.placeholder(tf.float32, [None, n_out]) # answer data
+	y_ = tf.placeholder(tf.float32, [None, 1]) # answer data
 
 	# variables
-	W = tf.Variable(tf.random_normal((n_in, n_hidden), 0.0, 1.0))
-	b = tf.Variable(tf.zeros([n_hidden]))
-
-	W2 = tf.Variable(tf.random_normal((n_hidden, n_out), 0.0, 1.0)) 
-	b2 = tf.Variable(tf.zeros([n_out]))
-	
-	# model
-	# h = tf.nn.softmax(tf.matmul(x, W) + b)
-	# y = tf.nn.softmax(tf.matmul(h, W2) + b2)
-
-	# model without softmax
-	h = tf.matmul(x, W) + b
-	y = tf.matmul(h, W2) + b2
+	W = tf.Variable(tf.random_normal((n_in, 1), 0.0, 1.0))
+	y = tf.matmul(x, W)
 
 	# cross entropy (loss function) for regression
 	loss = tf.reduce_mean(tf.square(y - y_))
@@ -49,7 +25,7 @@ def train_model(n_in, n_hidden, n_out, step_size):
 	# for run: Gradient Descent 
 	train_step = tf.train.GradientDescentOptimizer(step_size).minimize(loss) # run
 
-	model_dict = {"x": x, "y_": y_, "W": W, "b":b, "W2":W2, "b2":b2, "y":y, "loss":loss,  "train_step": train_step}
+	model_dict = {"x": x, "y_": y_, "W": W, "y":y, "loss":loss,  "train_step": train_step}
 	return model_dict
 
 def generate_dataset(model_dict_list, num_examples, num_test, n_in):
@@ -58,9 +34,6 @@ def generate_dataset(model_dict_list, num_examples, num_test, n_in):
 	y_data_full = sess.run(model_dict_list[0]["y"], feed_dict={model_dict_list[0]["x"]: x_data_full} )
 	var_ans_data = {
 		"W": sess.run(model_dict_list[0]["W"]),
-		"b": sess.run(model_dict_list[0]["b"]), 
-		"W2": sess.run(model_dict_list[0]["W2"]),
-		"b2": sess.run(model_dict_list[0]["b2"])
 		} 
 	x_data = x_data_full[0:num_examples,:]
 	y_data = y_data_full[0:num_examples,:]
@@ -82,7 +55,7 @@ def data_part(full_data_x, full_data_y,num_examples,n_workers,ind_worker):
 	return data_part_x, data_part_y
 
 def update_averaged_parameter(sess,model_dict_list,n_workers):
-	# ..
+	
 	ignore_list = ["x","y_","y", "loss", "train_step"]
 	for var_key in model_dict_list[0]:
 		if var_key in ignore_list:
@@ -100,15 +73,12 @@ def update_averaged_parameter(sess,model_dict_list,n_workers):
 
 
 #config
-n_in = 784
-n_hidden = 15
-n_out =10
-n_epochs = 10
+n_in = 1000
+n_epochs = 30
 n_workers = 20
-# num_examples = 55000 # num of train set
-num_examples = 200000 # num of train set
-num_test = 5000
-step_size = 10**(-3.8)  #1e-1
+num_examples = 10000 # num of train set
+num_test = 1000
+step_size = 10**(-2.8)  #1e-1
 batch_size = 1
 
 assert (len(sys.argv)==2), "need right number of arguments"
@@ -132,7 +102,7 @@ print "batch_size:", batch_size
 print "making models..."
 model_dict_list = []
 for i in range(n_workers):
-	model_dict_list.append(train_model(n_in, n_hidden, n_out, step_size))
+	model_dict_list.append(train_model(n_in, step_size))
 
 sess = tf.InteractiveSession()
 sess.run(tf.initialize_all_variables())
