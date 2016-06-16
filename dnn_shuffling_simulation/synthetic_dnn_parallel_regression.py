@@ -31,8 +31,12 @@ def train_model(n_in, n_hidden, n_out, step_size):
 	b2 = tf.Variable(tf.zeros([n_out]))
 	
 	# model
-	h = tf.nn.softmax(tf.matmul(x, W) + b)
-	y = tf.nn.softmax(tf.matmul(h, W2) + b2)
+	# h = tf.nn.softmax(tf.matmul(x, W) + b)
+	# y = tf.nn.softmax(tf.matmul(h, W2) + b2)
+
+	# model without softmax
+	h = tf.matmul(x, W) + b
+	y = tf.matmul(h, W2) + b2
 
 	# cross entropy (loss function) for regression
 	loss = tf.reduce_mean(tf.square(y - y_))
@@ -98,10 +102,10 @@ n_epochs = 10
 n_workers = 10
 num_examples = 55000 # num of train set
 num_test = 5000
-step_size = 100  #1e-1
+step_size = 1e-4  #1e-1
 batch_size = 50
 SHUFFLE_DATA = False
-# SHUFFLE_DATA = True
+SHUFFLE_DATA = True
 
 np.random.seed(0)
 tf.set_random_seed(0)
@@ -147,7 +151,7 @@ for step in range(n_epochs):
 				model_dict_list[0]["y_"]: y_data_test,
 				}
 			) 
-		print("epoch %d, test error %g"%(step, test_error)) # not normalized yet
+		print("epoch %d, test error: %g"%(step, test_error)) # not normalized yet
 
 	if SHUFFLE_DATA:
 		x_data, y_data = shuffle_dataset(x_data,y_data,num_examples)
@@ -174,7 +178,7 @@ test_error = sess.run(
 		model_dict_list[0]["y_"]: y_data_test,
 		}
 	) 
-print("   final test error %g"%(test_error)) # not normalized yet
+print("   final test error: %g"%(test_error)) # not normalized yet
 
 print 'Running Time : %.02f sec' % (time.time() - start_time)
 # import ipdb; ipdb.set_trace()
