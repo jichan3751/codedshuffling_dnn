@@ -10,8 +10,13 @@
 
 4. run optimizer
 
-"""
+>features needed
+- add noise
 
+
+
+"""
+import sys
 import tensorflow as tf
 import numpy as np
 import time
@@ -98,14 +103,18 @@ def update_averaged_parameter(sess,model_dict_list,n_workers):
 n_in = 784
 n_hidden = 15
 n_out =10
-n_epochs = 10
-n_workers = 10
+n_epochs = 100
+n_workers = 20
 num_examples = 55000 # num of train set
 num_test = 5000
-step_size = 1e-4  #1e-1
+step_size = 10**(-2.2)  #1e-1
 batch_size = 50
-SHUFFLE_DATA = False
-SHUFFLE_DATA = True
+
+assert (len(sys.argv)==2), "need right number of arguments"
+if int(sys.argv[1])==1:
+	SHUFFLE_DATA = True
+else:
+	SHUFFLE_DATA = False
 
 np.random.seed(0)
 tf.set_random_seed(0)
@@ -114,9 +123,9 @@ assert (num_examples % (batch_size * n_workers)==0), \
 	"(num_examples % (batch_size * n_workers)==0)"
 
 print "shuffle data:", SHUFFLE_DATA
-print "step size:", step_size
-print "n_worker", n_workers
-print "batch_size", batch_size
+print "step size:%e" % step_size
+print "n_worker:", n_workers
+print "batch_size:", batch_size
 
 # make train models for each worker
 print "making models..."
@@ -182,3 +191,7 @@ print("   final test error: %g"%(test_error)) # not normalized yet
 
 print 'Running Time : %.02f sec' % (time.time() - start_time)
 # import ipdb; ipdb.set_trace()
+print "-------------"
+
+
+
