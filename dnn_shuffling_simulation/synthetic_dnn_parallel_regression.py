@@ -103,7 +103,7 @@ def update_averaged_parameter(sess,model_dict_list,n_workers):
 n_in = 784
 n_hidden = 50
 n_out =10
-n_epochs = 10
+n_epochs = 30
 n_workers = 20
 # num_examples = 55000 # num of train set
 num_examples = 20000 # num of train set
@@ -127,6 +127,7 @@ print "shuffle data:", SHUFFLE_DATA
 print "step size:%e" % step_size
 print "n_worker:", n_workers
 print "batch_size:", batch_size
+print "num_examples", num_examples
 
 # make train models for each worker
 print "making models..."
