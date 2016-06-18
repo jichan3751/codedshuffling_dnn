@@ -52,10 +52,11 @@ def train_model(n_in, n_hidden, n_out, step_size):
 	model_dict = {"x": x, "y_": y_, "W": W, "b":b, "W2":W2, "b2":b2, "y":y, "loss":loss,  "train_step": train_step}
 	return model_dict
 
-def generate_dataset(model_dict_list, num_examples, num_test, n_in):
+def generate_dataset(model_dict_list, num_examples, num_test, n_in, sigma2_error):
 	# generate synthetic data (from model #0)
 	x_data_full = np.random.normal(0, 1, (num_examples + num_test, n_in))
 	y_data_full = sess.run(model_dict_list[0]["y"], feed_dict={model_dict_list[0]["x"]: x_data_full} )
+	y_data_full = y_data_full + np.random.normal(0, sigma2_error**(0.5), (y_data_full.shape)) #add noise
 	var_ans_data = {
 		"W": sess.run(model_dict_list[0]["W"]),
 		"b": sess.run(model_dict_list[0]["b"]), 
@@ -106,10 +107,11 @@ n_out =10
 n_epochs = 30
 n_workers = 20
 # num_examples = 55000 # num of train set
-num_examples = 20000 # num of train set
+num_examples = 5000 # num of train set
 num_test = 5000
 step_size = 10**(-3.9)  #1e-1
 batch_size = 1
+sigma2_error = 0.01 # for adding noise
 
 assert (len(sys.argv)==2), "need right number of arguments"
 if int(sys.argv[1])==1:
@@ -141,7 +143,7 @@ sess.run(tf.initialize_all_variables())
 # generate_dataset
 print "generating datasets..."
 var_ans_data, x_data, y_data, x_data_test, y_data_test = \
-	generate_dataset(model_dict_list, num_examples, num_test, n_in)
+	generate_dataset(model_dict_list, num_examples, num_test, n_in, sigma2_error)
 	# add save & load here
 
 # learning part
