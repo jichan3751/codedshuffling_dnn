@@ -117,12 +117,15 @@ assert (len(sys.argv)==2), "need right number of arguments"
 if int(sys.argv[1])==1:
 	SHUFFLE_DATA_GLOBAL = True
 	SHUFFLE_DATA_INTERNAL = False
+	print "Global Shuffling"
 elif int(sys.argv[1])==2:
 	SHUFFLE_DATA_GLOBAL = False
 	SHUFFLE_DATA_INTERNAL = True
+	print "Internal Shuffling"
 else:
 	SHUFFLE_DATA_GLOBAL = False
 	SHUFFLE_DATA_INTERNAL = False
+	print "no Shuffling"
 
 np.random.seed(0)
 tf.set_random_seed(0)
@@ -130,7 +133,6 @@ tf.set_random_seed(0)
 assert (num_examples % (batch_size * n_workers)==0), \
 	"(num_examples % (batch_size * n_workers)==0)"
 
-print "shuffle data:", SHUFFLE_DATA_GLOBAL
 print "step size:%e" % step_size
 print "n_worker:", n_workers
 print "batch_size:", batch_size
