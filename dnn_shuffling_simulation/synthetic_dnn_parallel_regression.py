@@ -106,18 +106,23 @@ n_hidden = 50
 n_out =10
 n_epochs = 30
 n_workers = 20
-# num_examples = 55000 # num of train set
 num_examples = 5000 # num of train set
 num_test = 5000
 step_size = 10**(-3.9)  #1e-1
 batch_size = 1
-sigma2_error = 0.01 # for adding noise
+sigma2_error = 0.1 # for adding noise
+
 
 assert (len(sys.argv)==2), "need right number of arguments"
 if int(sys.argv[1])==1:
-	SHUFFLE_DATA = True
+	SHUFFLE_DATA_GLOBAL = True
+	SHUFFLE_DATA_INTERNAL = False
+elif int(sys.argv[1])==2:
+	SHUFFLE_DATA_GLOBAL = False
+	SHUFFLE_DATA_INTERNAL = True
 else:
-	SHUFFLE_DATA = False
+	SHUFFLE_DATA_GLOBAL = False
+	SHUFFLE_DATA_INTERNAL = False
 
 np.random.seed(0)
 tf.set_random_seed(0)
@@ -125,11 +130,12 @@ tf.set_random_seed(0)
 assert (num_examples % (batch_size * n_workers)==0), \
 	"(num_examples % (batch_size * n_workers)==0)"
 
-print "shuffle data:", SHUFFLE_DATA
+print "shuffle data:", SHUFFLE_DATA_GLOBAL
 print "step size:%e" % step_size
 print "n_worker:", n_workers
 print "batch_size:", batch_size
 print "num_examples", num_examples
+print "noise(sigma**2)", sigma2_error
 
 # make train models for each worker
 print "making models..."
@@ -147,7 +153,6 @@ var_ans_data, x_data, y_data, x_data_test, y_data_test = \
 	# add save & load here
 
 # learning part
-
 sess.run(tf.initialize_all_variables())
 
 start_time = time.time();
@@ -167,10 +172,12 @@ for step in range(n_epochs):
 		assert (not (np.isnan(test_error))), "test error nan!!"
 		print("epoch %d, test error: %g"%(step, test_error)) # not normalized yet
 
-	if SHUFFLE_DATA:
+	if SHUFFLE_DATA_GLOBAL:
 		x_data, y_data = shuffle_dataset(x_data,y_data,num_examples)
 	for worker in range(n_workers):
 		data_part_x, data_part_y = data_part(x_data, y_data, num_examples,n_workers,worker)
+		if SHUFFLE_DATA_INTERNAL:
+			data_part_x, data_part_y = shuffle_dataset(data_part_x,data_part_y,data_part_x.shape[0])
 		num_of_batch = (data_part_x.shape[0])//batch_size
 		for batch_index in range(num_of_batch):
 			batch_x = data_part_x[batch_index*batch_size:(batch_index+1)*batch_size,:]
