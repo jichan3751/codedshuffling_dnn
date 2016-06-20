@@ -10,8 +10,8 @@
 
 4. run optimizer
 
->features needed
-- add noise
+> changelog for commit
+adding noise only to the train set!!
 
 
 
@@ -56,7 +56,6 @@ def generate_dataset(model_dict_list, num_examples, num_test, n_in, sigma2_error
 	# generate synthetic data (from model #0)
 	x_data_full = np.random.normal(0, 1, (num_examples + num_test, n_in))
 	y_data_full = sess.run(model_dict_list[0]["y"], feed_dict={model_dict_list[0]["x"]: x_data_full} )
-	y_data_full = y_data_full + np.random.normal(0, sigma2_error**(0.5), (y_data_full.shape)) #add noise
 	var_ans_data = {
 		"W": sess.run(model_dict_list[0]["W"]),
 		"b": sess.run(model_dict_list[0]["b"]), 
@@ -64,7 +63,9 @@ def generate_dataset(model_dict_list, num_examples, num_test, n_in, sigma2_error
 		"b2": sess.run(model_dict_list[0]["b2"])
 		} 
 	x_data = x_data_full[0:num_examples,:]
-	y_data = y_data_full[0:num_examples,:]
+	y_data = y_data_full[0:num_examples,:] 
+	y_data = y_data + np.random.normal(0, sigma2_error**(0.5), (y_data.shape)) #add noise
+
 	x_data_test = x_data_full[num_examples:,:]
 	y_data_test = y_data_full[num_examples:,:]
 	return var_ans_data, x_data, y_data, x_data_test, y_data_test
@@ -104,9 +105,9 @@ def update_averaged_parameter(sess,model_dict_list,n_workers):
 n_in = 784
 n_hidden = 50
 n_out =10
-n_epochs = 30
+n_epochs = 80
 n_workers = 20
-num_examples = 5000 # num of train set
+num_examples = 2000 # num of train set
 num_test = 5000
 step_size = 10**(-3.9)  #1e-1
 batch_size = 1
