@@ -10,9 +10,12 @@
 
 4. run optimizer
 
-> changelog for commit
-adding noise only to the train set!!
+> things to add
+- ask for more epoch run?
 
+> changelog for commit
+
+change final test error format
 
 
 """
@@ -202,7 +205,7 @@ test_error = sess.run(
 		model_dict_list[0]["y_"]: y_data_test,
 		}
 	) 
-print("   final test error: %g"%(test_error)) # not normalized yet
+print("epoch %d, test error: %g"%(n_epochs, test_error)) # not normalized yet
 
 print 'Running Time : %.02f sec' % (time.time() - start_time)
 # import ipdb; ipdb.set_trace()
