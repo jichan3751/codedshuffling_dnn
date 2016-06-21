@@ -14,9 +14,9 @@
 - ask for more epoch run?
 
 > changelog for commit
+added 'diff' of test error 
 added 'diff' of test error
-added 'diff' of test error
-added n_epoch print
+added n_epoch print 
 added W b diff print
 changed initial bias from zero to random normal
 """
@@ -24,7 +24,6 @@ import sys
 import tensorflow as tf
 import numpy as np
 import time
-
 
 def train_model(n_in, n_hidden, n_out, step_size):
 	# inputs
