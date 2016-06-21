@@ -14,11 +14,6 @@
 - ask for more epoch run?
 
 > changelog for commit
-added 'diff' of test error 
-added 'diff' of test error
-added n_epoch print 
-added W b diff print
-changed initial bias from zero to random normal
 """
 import sys
 import tensorflow as tf
