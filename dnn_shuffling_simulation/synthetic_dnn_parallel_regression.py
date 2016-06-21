@@ -14,7 +14,11 @@
 - ask for more epoch run?
 
 > changelog for commit
-
+added 'diff' of test error
+added 'diff' of test error
+added n_epoch print
+added W b diff print
+changed initial bias from zero to random normal
 """
 import sys
 import tensorflow as tf
@@ -23,17 +27,18 @@ import time
 
 
 def train_model(n_in, n_hidden, n_out, step_size):
-
 	# inputs
 	x = tf.placeholder(tf.float32, [None, n_in]) 
 	y_ = tf.placeholder(tf.float32, [None, n_out]) # answer data
 
 	# variables
 	W = tf.Variable(tf.random_normal((n_in, n_hidden), 0.0, 1.0))
-	b = tf.Variable(tf.zeros([n_hidden]))
+	b = tf.Variable(tf.random_normal((1,n_hidden), 0.0, 1.0))
+	# b = tf.Variable(tf.zeros([n_hidden])) #initializing as zero
 
 	W2 = tf.Variable(tf.random_normal((n_hidden, n_out), 0.0, 1.0)) 
-	b2 = tf.Variable(tf.zeros([n_out]))
+	b2 = tf.Variable(tf.random_normal((1,n_out), 0.0, 1.0))
+	# b2 = tf.Variable(tf.zeros([n_out])) #initializing as zero
 	
 	# model
 	# h = tf.nn.softmax(tf.matmul(x, W) + b)
@@ -100,14 +105,21 @@ def update_averaged_parameter(sess,model_dict_list,n_workers):
 		for worker in range(n_workers):
 			sess.run(model_dict_list[worker][var_key].assign(W_tmp))
 
+def get_variable_error(var_key, var_ans_data, model_dict_list_element,sess):
+	return np.sum( (var_ans_data[var_key] - sess.run(model_dict_list_element[var_key])) ** 2) / np.sum(var_ans_data[var_key] ** 2)
+
+
+
+
+
 
 #config
 n_in = 784
 n_hidden = 200
 n_out =10
-n_epochs = 20
+n_epochs = 40
 n_workers = 20
-num_examples = 20000 # num of train set
+num_examples = 4000 # num of train set
 num_test = 5000
 step_size = 10**(-4.4)  #1e-1
 batch_size = 1
@@ -139,6 +151,7 @@ print "n_worker:", n_workers
 print "batch_size:", batch_size
 print "num_examples", num_examples
 print "noise(sigma**2)", sigma2_error
+print "n_epoch ", n_epochs
 
 # make train models for each worker
 print "making models..."
@@ -149,6 +162,8 @@ for i in range(n_workers):
 sess = tf.InteractiveSession()
 sess.run(tf.initialize_all_variables())
 
+
+
 # generate_dataset
 print "generating datasets..."
 var_ans_data, x_data, y_data, x_data_test, y_data_test = \
@@ -158,22 +173,43 @@ var_ans_data, x_data, y_data, x_data_test, y_data_test = \
 # learning part
 sess.run(tf.initialize_all_variables())
 
-start_time = time.time();
+# import ipdb; ipdb.set_trace()
 
+
+start_time = time.time();
+test_errors = []
+prev_error = 0.0
 
 print "start training..."
 for step in range(n_epochs):
 	#check error
 	if step%1==0:
+		
 		test_error = sess.run(
 			model_dict_list[0]["loss"], 
 			feed_dict={
 				model_dict_list[0]["x"]: x_data_test,
 				model_dict_list[0]["y_"]: y_data_test,
 				}
-			) 
+			)
+		
 		assert (not (np.isnan(test_error))), "test error nan!!"
-		print("epoch %d, test error: %g"%(step, test_error)) # not normalized yet
+		test_errors.append(test_error)
+		print("epoch %d, test error: %g, diff: %g"%(step, test_error,test_error - prev_error )) # not normalized yet
+		prev_error = test_error
+
+		# print(
+		# 	"ep %d , W1: %g, b1: %g, W2: %g, b2 %g" %
+		# 	(
+		# 		step, 
+		# 		get_variable_error("W", var_ans_data, model_dict_list[0],sess),
+		# 		get_variable_error("b", var_ans_data, model_dict_list[0],sess),
+		# 		get_variable_error("W2", var_ans_data, model_dict_list[0],sess),
+		# 		get_variable_error("b2", var_ans_data, model_dict_list[0],sess),
+		# 	)
+		# )
+
+
 
 	if SHUFFLE_DATA_GLOBAL:
 		x_data, y_data = shuffle_dataset(x_data,y_data,num_examples)
@@ -193,7 +229,6 @@ for step in range(n_epochs):
 					}
 				)
 	update_averaged_parameter(sess,model_dict_list,n_workers)
-	
 
 test_error = sess.run(
 	model_dict_list[0]["loss"], 
@@ -202,11 +237,26 @@ test_error = sess.run(
 		model_dict_list[0]["y_"]: y_data_test,
 		}
 	) 
-print("epoch %d, test error: %g"%(n_epochs, test_error)) # not normalized yet
+
+test_errors.append(test_error)
+print("epoch %d, test error: %g, diff: %g"%(n_epochs, test_error, test_error - prev_error )) # not normalized yet
+
+# print(
+# 	"ep %d , W1: %g, b1: %g, W2: %g, b2 %g" %
+# 	(
+# 		step, 
+# 		get_variable_error("W", var_ans_data, model_dict_list[0]),
+# 		get_variable_error("b", var_ans_data, model_dict_list[0]),
+# 		get_variable_error("W2", var_ans_data, model_dict_list[0]),
+# 		get_variable_error("b2", var_ans_data, model_dict_list[0]),
+# 	)
+# )
+
 
 print 'Running Time : %.02f sec' % (time.time() - start_time)
-# import ipdb; ipdb.set_trace()
+
 print "-------------"
 
 
 
+# import ipdb; ipdb.set_trace()
