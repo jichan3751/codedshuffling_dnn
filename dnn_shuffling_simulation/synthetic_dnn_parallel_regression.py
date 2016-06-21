@@ -15,9 +15,6 @@
 
 > changelog for commit
 
-change final test error format
-
-
 """
 import sys
 import tensorflow as tf
@@ -106,13 +103,13 @@ def update_averaged_parameter(sess,model_dict_list,n_workers):
 
 #config
 n_in = 784
-n_hidden = 50
+n_hidden = 200
 n_out =10
-n_epochs = 80
+n_epochs = 20
 n_workers = 20
-num_examples = 2000 # num of train set
+num_examples = 20000 # num of train set
 num_test = 5000
-step_size = 10**(-3.9)  #1e-1
+step_size = 10**(-4.4)  #1e-1
 batch_size = 1
 sigma2_error = 0.1 # for adding noise
 
