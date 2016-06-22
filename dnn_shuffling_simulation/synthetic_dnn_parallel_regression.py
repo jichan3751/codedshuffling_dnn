@@ -14,6 +14,7 @@
 - ask for more epoch run?
 
 > changelog for commit
+
 """
 import sys
 import tensorflow as tf
@@ -82,6 +83,20 @@ def data_part(full_data_x, full_data_y,num_examples,n_workers,ind_worker):
 	data_part_y = full_data_y[(num_data_per_worker)*ind_worker:(num_data_per_worker)*(ind_worker+1)]
 	return data_part_x, data_part_y
 
+def assign_initial_parameter(sess,model_dict_list,n_workers):
+	# assigns model#0's parameters to other models
+
+	ignore_list = ["x","y_","y", "loss", "train_step"]
+	for var_key in model_dict_list[0]:
+		if var_key in ignore_list:
+			continue
+		
+		W_tmp = sess.run(model_dict_list[0][var_key])
+
+		# update values in variables
+		for worker in range(1,n_workers):
+			sess.run(model_dict_list[worker][var_key].assign(W_tmp))
+
 def update_averaged_parameter(sess,model_dict_list,n_workers):
 	# ..
 	ignore_list = ["x","y_","y", "loss", "train_step"]
@@ -103,17 +118,13 @@ def get_variable_error(var_key, var_ans_data, model_dict_list_element,sess):
 	return np.sum( (var_ans_data[var_key] - sess.run(model_dict_list_element[var_key])) ** 2) / np.sum(var_ans_data[var_key] ** 2)
 
 
-
-
-
-
 #config
 n_in = 784
 n_hidden = 200
 n_out =10
 n_epochs = 40
 n_workers = 20
-num_examples = 4000 # num of train set
+num_examples = 5000 # num of train set
 num_test = 5000
 step_size = 10**(-4.4)  #1e-1
 batch_size = 1
@@ -155,8 +166,7 @@ for i in range(n_workers):
 
 sess = tf.InteractiveSession()
 sess.run(tf.initialize_all_variables())
-
-
+assign_initial_parameter(sess,model_dict_list,n_workers)
 
 # generate_dataset
 print "generating datasets..."
@@ -192,16 +202,16 @@ for step in range(n_epochs):
 		print("epoch %d, test error: %g, diff: %g"%(step, test_error,test_error - prev_error )) # not normalized yet
 		prev_error = test_error
 
-		# print(
-		# 	"ep %d , W1: %g, b1: %g, W2: %g, b2 %g" %
-		# 	(
-		# 		step, 
-		# 		get_variable_error("W", var_ans_data, model_dict_list[0],sess),
-		# 		get_variable_error("b", var_ans_data, model_dict_list[0],sess),
-		# 		get_variable_error("W2", var_ans_data, model_dict_list[0],sess),
-		# 		get_variable_error("b2", var_ans_data, model_dict_list[0],sess),
-		# 	)
-		# )
+		print(
+			"ep %d , W1: %g, b1: %g, W2: %g, b2 %g" %
+			(
+				step, 
+				get_variable_error("W", var_ans_data, model_dict_list[0],sess),
+				get_variable_error("b", var_ans_data, model_dict_list[0],sess),
+				get_variable_error("W2", var_ans_data, model_dict_list[0],sess),
+				get_variable_error("b2", var_ans_data, model_dict_list[0],sess),
+			)
+		)
 
 
 
@@ -235,16 +245,16 @@ test_error = sess.run(
 test_errors.append(test_error)
 print("epoch %d, test error: %g, diff: %g"%(n_epochs, test_error, test_error - prev_error )) # not normalized yet
 
-# print(
-# 	"ep %d , W1: %g, b1: %g, W2: %g, b2 %g" %
-# 	(
-# 		step, 
-# 		get_variable_error("W", var_ans_data, model_dict_list[0]),
-# 		get_variable_error("b", var_ans_data, model_dict_list[0]),
-# 		get_variable_error("W2", var_ans_data, model_dict_list[0]),
-# 		get_variable_error("b2", var_ans_data, model_dict_list[0]),
-# 	)
-# )
+print(
+	"ep %d , W1: %g, b1: %g, W2: %g, b2 %g" %
+	(
+		step, 
+		get_variable_error("W", var_ans_data, model_dict_list[0],sess),
+		get_variable_error("b", var_ans_data, model_dict_list[0],sess),
+		get_variable_error("W2", var_ans_data, model_dict_list[0],sess),
+		get_variable_error("b2", var_ans_data, model_dict_list[0],sess),
+	)
+)
 
 
 print 'Running Time : %.02f sec' % (time.time() - start_time)
