@@ -122,10 +122,10 @@ def get_variable_error(var_key, var_ans_data, model_dict_list_element,sess):
 n_in = 784
 n_hidden = 200
 n_out =10
-n_epochs = 40
-n_workers = 20
-num_examples = 5000 # num of train set
-num_test = 5000
+n_epochs = 100
+n_workers = 10
+num_examples = 6000 # num of train set
+num_test = 1000
 step_size = 10**(-4.4)  #1e-1
 batch_size = 1
 sigma2_error = 0.1 # for adding noise
@@ -154,9 +154,9 @@ assert (num_examples % (batch_size * n_workers)==0), \
 print "step size:%e" % step_size
 print "n_worker:", n_workers
 print "batch_size:", batch_size
-print "num_examples", num_examples
-print "noise(sigma**2)", sigma2_error
-print "n_epoch ", n_epochs
+print "num_examples:", num_examples
+print "noise(sigma**2):", sigma2_error
+print "n_epoch: ", n_epochs
 
 # make train models for each worker
 print "making models..."
@@ -202,16 +202,16 @@ for step in range(n_epochs):
 		print("epoch %d, test error: %g, diff: %g"%(step, test_error,test_error - prev_error )) # not normalized yet
 		prev_error = test_error
 
-		print(
-			"ep %d , W1: %g, b1: %g, W2: %g, b2 %g" %
-			(
-				step, 
-				get_variable_error("W", var_ans_data, model_dict_list[0],sess),
-				get_variable_error("b", var_ans_data, model_dict_list[0],sess),
-				get_variable_error("W2", var_ans_data, model_dict_list[0],sess),
-				get_variable_error("b2", var_ans_data, model_dict_list[0],sess),
-			)
-		)
+		# print(
+		# 	"ep %d , W1: %g, b1: %g, W2: %g, b2 %g" %
+		# 	(
+		# 		step, 
+		# 		get_variable_error("W", var_ans_data, model_dict_list[0],sess),
+		# 		get_variable_error("b", var_ans_data, model_dict_list[0],sess),
+		# 		get_variable_error("W2", var_ans_data, model_dict_list[0],sess),
+		# 		get_variable_error("b2", var_ans_data, model_dict_list[0],sess),
+		# 	)
+		# )
 
 
 
@@ -245,16 +245,16 @@ test_error = sess.run(
 test_errors.append(test_error)
 print("epoch %d, test error: %g, diff: %g"%(n_epochs, test_error, test_error - prev_error )) # not normalized yet
 
-print(
-	"ep %d , W1: %g, b1: %g, W2: %g, b2 %g" %
-	(
-		step, 
-		get_variable_error("W", var_ans_data, model_dict_list[0],sess),
-		get_variable_error("b", var_ans_data, model_dict_list[0],sess),
-		get_variable_error("W2", var_ans_data, model_dict_list[0],sess),
-		get_variable_error("b2", var_ans_data, model_dict_list[0],sess),
-	)
-)
+# print(
+# 	"ep %d , W1: %g, b1: %g, W2: %g, b2 %g" %
+# 	(
+# 		step, 
+# 		get_variable_error("W", var_ans_data, model_dict_list[0],sess),
+# 		get_variable_error("b", var_ans_data, model_dict_list[0],sess),
+# 		get_variable_error("W2", var_ans_data, model_dict_list[0],sess),
+# 		get_variable_error("b2", var_ans_data, model_dict_list[0],sess),
+# 	)
+# )
 
 
 print 'Running Time : %.02f sec' % (time.time() - start_time)
