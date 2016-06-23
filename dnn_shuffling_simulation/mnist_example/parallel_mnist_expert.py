@@ -244,8 +244,8 @@ for step in range(n_epochs):
 			step,
 			model_dict_list[0]["accuracy"].eval(
 				feed_dict={
-					model_dict_list[0]["x"]: mnist.test.images, 
-					model_dict_list[0]["y_"]: mnist.test.labels, 
+					model_dict_list[0]["x"]: mnist.test.images[0:1000], 
+					model_dict_list[0]["y_"]: mnist.test.labels[0:1000], 
 					model_dict_list[0]["keep_prob"]: 1.0
 				}
 			)
