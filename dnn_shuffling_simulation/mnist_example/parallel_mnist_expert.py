@@ -20,8 +20,8 @@ import time
 # batch_size = 50
 
 
-n_workers = 2
-n_epochs = 20 # = step
+n_workers = 5
+n_epochs = 50 #50 = step
 batch_size = 50
 
 def weight_variable(shape):
@@ -86,12 +86,39 @@ def train_model():
 	correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(y_,1))
 	accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
+	# for assigning variable values (runs out of memory if not used!)
+	W_conv1_in = tf.placeholder(tf.float32, [5, 5, 1, 32])
+	b_conv1_in = tf.placeholder(tf.float32, [32])
+	W_conv2_in = tf.placeholder(tf.float32, [5, 5, 32, 64])
+	b_conv2_in = tf.placeholder(tf.float32, [64])
+	W_fc1_in =  tf.placeholder(tf.float32, [7 * 7 * 64, 1024])
+	b_fc1_in = tf.placeholder(tf.float32, [1024])
+	W_fc2_in =  tf.placeholder(tf.float32, [1024, 10])
+	b_fc2_in = tf.placeholder(tf.float32, [10])
+
+	W_conv1_assign = W_conv1.assign(W_conv1_in)
+	b_conv1_assign = b_conv1.assign(b_conv1_in)
+	W_conv2_assign = W_conv2.assign(W_conv2_in)
+	b_conv2_assign = b_conv2.assign(b_conv2_in)
+	W_fc1_assign = W_fc1.assign(W_fc1_in)
+	b_fc1_assign = b_fc1.assign(b_fc1_in)
+	W_fc2_assign = W_fc2.assign(W_fc2_in)
+	b_fc2_assign = b_fc2.assign(b_fc2_in)
+
 	model_dict = {
 		"x": x, "y_": y_, 
 		"W_conv1": W_conv1, "b_conv1":b_conv1, 
 		"W_conv2": W_conv2, "b_conv2":b_conv2, 
 		"W_fc1": W_fc1, "b_fc1":b_fc1, 
-		"W_fc2": W_fc2, "b_fc2":b_fc2, 
+		"W_fc2": W_fc2, "b_fc2":b_fc2,
+		"W_conv1_in": W_conv1_in, "b_conv1_in":b_conv1_in, 
+		"W_conv2_in": W_conv2_in, "b_conv2_in":b_conv2_in, 
+		"W_fc1_in": W_fc1_in, "b_fc1_in":b_fc1_in, 
+		"W_fc2_in": W_fc2_in, "b_fc2_in":b_fc2_in,
+		"W_conv1_assign": W_conv1_assign, "b_conv1_assign":b_conv1_assign, 
+		"W_conv2_assign": W_conv2_assign, "b_conv2_assign":b_conv2_assign, 
+		"W_fc1_assign": W_fc1_assign, "b_fc1_assign":b_fc1_assign, 
+		"W_fc2_assign": W_fc2_assign, "b_fc2_assign":b_fc2_assign,
 		"keep_prob": keep_prob,
 		"train_step": train_step,
 		"accuracy": accuracy
@@ -113,20 +140,20 @@ def update_averaged_parameter(sess,model_dict_list,n_workers):
 		"W_conv2", "b_conv2",
 		"W_fc1", "b_fc1",
 		"W_fc2", "b_fc2"
-	] 
-	for var_key in model_dict_list[0]:
-		if var_key not in var_list:
-			continue
-
+	]
+	for var_key in var_list:
 		# get averaged value
-		var = sess.run(model_dict_list[0][var_key])
+		var_array = sess.run(model_dict_list[0][var_key])
 		for worker in range(1,n_workers):
-			var = var + sess.run(model_dict_list[worker][var_key])
-		var = var / n_workers
+			var_array = var_array + sess.run(model_dict_list[worker][var_key])
+		var_array = var_array / n_workers
 		
-		# update values in vaurables
+		# update values in variables
+		var_assign_key = var_key+"_assign"
+		var_input_key = var_key+"_in"
 		for worker in range(n_workers):
-			sess.run(model_dict_list[worker][var_key].assign(var))
+			sess.run(model_dict_list[worker][var_assign_key], feed_dict={model_dict_list[worker][var_input_key]: var_array })
+
 
 
 
@@ -176,6 +203,8 @@ start_time = time.time();
 
 print "start training..."
 for step in range(n_epochs):
+	# print "step %d parameter update" % step
+	update_averaged_parameter(sess,model_dict_list,n_workers)
 	for ind_worker in range(n_workers):
 
 		if SHUFFLE_DATA_INTERNAL:
@@ -199,7 +228,7 @@ for step in range(n_epochs):
 			# 		}
 			# 	)
 			# 	print("step %d, worker %d, batch %d training accuracy %g"%(step, ind_worker, ind_batch, train_accuracy))
-
+			# print "step %d, worker %d, batch %d" % (step, ind_worker, ind_batch)
 			model_dict_list[ind_worker]["train_step"].run(
 				feed_dict={
 					model_dict_list[ind_worker]["x"]: batch_xs,
@@ -208,7 +237,8 @@ for step in range(n_epochs):
 				}
 			)
 
-	update_averaged_parameter(sess,model_dict_list,n_workers)
+	# print "step %d parameter update" % step
+	# update_averaged_parameter(sess,model_dict_list,n_workers)
 	print(
 		"step %d ,test accuracy %g" % (
 			step,
